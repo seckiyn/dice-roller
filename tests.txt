@@ -1,0 +1,13 @@
+d10          # For no amount dices
+1d10         # For amount dices
+3d8          # For multiple amount dices
+d1+d1+d1     # Check addition  = +3
+d1-d1-d1     # Check subsition = -1
+d3*d1*d1     # Checks multipliciation
+d10/d2/d1    # Checks division
+d8+d8+d8     # Checks addition random
+2(d8+d10)    # Checks parantheses
+2 * (2d10 + 3d8) # Check operation with parantheses
+2 * 3(2d10 + 3d8) # Check operation with parantheses
++d10         # Checks unary operation
+-d10 + 2d4 # Check negative unary operation
