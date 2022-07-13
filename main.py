@@ -1,11 +1,9 @@
 """ Dice roller main interpreter """
 import random
 
-random.seed(123)
-
 # CONSTS
 
-VERBOSE = True
+VERBOSE = False
 DIGITS = "1234567890"
 IGNORE_CHARACTERS = " \n\t"
 
