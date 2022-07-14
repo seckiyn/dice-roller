@@ -64,7 +64,7 @@ class Lexer:
     def dicer(self):
         """ Returns a DICE token """
         self.advance() # Advance the "d" character
-        return Token(DICE, self.integer().value)
+        return Token(DICE, int(self.integer().value))
     def math_token(self):
         """ Returns operation(math) tokens """
         if self.current_char == "+":
