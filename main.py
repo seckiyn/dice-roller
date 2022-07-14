@@ -3,9 +3,9 @@ import random
 
 # CONSTS
 
-VERBOSE = False
-DIGITS = "1234567890"
-IGNORE_CHARACTERS = " \n\t"
+VERBOSE = False # Adds additional output information
+DIGITS = "1234567890" # Digits(not neccessary)
+IGNORE_CHARACTERS = " \n\t" # Characters to ignore in expression
 
 # TOKEN TYPES
 INTEGER, FLOAT, PLUS, MINUS, MUL, DIV, LPAREN, RPAREN, DICE, EOF = (
@@ -13,7 +13,9 @@ INTEGER, FLOAT, PLUS, MINUS, MUL, DIV, LPAREN, RPAREN, DICE, EOF = (
         "LPAREN", "RPAREN", "DICE", "EOF"
         )
 
+
 class Token:
+    """ Token storage class """
     def __init__(self, type_, value):
         self.type = type_
         self.value = value
@@ -25,19 +27,28 @@ class Token:
 
 
 class Lexer:
+    """ Lexical analyzer """
     def __init__(self, text):
         self.text = text
         self.pos = -1
+        self.row, self.col = 0, -1
         self.current_char = None
         self.advance()
     def advance(self):
+        """ Move forward the cursor """
         self.pos += 1
         if self.pos > len(self.text) - 1:
             self.current_char = None
         else:
             self.current_char = self.text[self.pos]
+            self.col += 1
+            if self.current_char == "\n":
+                self.row += 1
+                self.col = 0
+
             # print(self.current_char)
     def integer(self):
+        """ Returns a number token """
         num = ""
         while self.current_char is not None and self.current_char in DIGITS:
             num += self.current_char
@@ -51,9 +62,11 @@ class Lexer:
             return Token(FLOAT, float(num))
         return Token(INTEGER, int(num))
     def dicer(self):
-        self.advance()
+        """ Returns a DICE token """
+        self.advance() # Advance the "d" character
         return Token(DICE, self.integer().value)
     def math_token(self):
+        """ Returns operation(math) tokens """
         if self.current_char == "+":
             self.advance()
             return Token(PLUS, "+")
@@ -74,6 +87,7 @@ class Lexer:
             return Token(RPAREN, ")")
         raise Exception("Something is wrong")
     def get_next_token(self):
+        """ Returns the token """
         while self.current_char is not None:
             if self.current_char in IGNORE_CHARACTERS:
                 self.advance()
@@ -84,18 +98,27 @@ class Lexer:
                 return self.dicer()
             if self.current_char in "(+-*/)":
                 return self.math_token()
-            raise Exception("Something is wrong") # TODO: Add line number
+            ex = "Unexpected char {} at {} (row: {}, col: {})"
+            ex = ex.format(self.current_char, self.pos, self.row, self.col)
+            raise Exception(ex)
         return Token(EOF, None)
 
 
 # PARSER AND AST CLASSES
 
 class AST:
+    """ AST base class """
     def __repr__(self):
         return str(self)
 
 class BinaryOp(AST):
+    """ Binary operations """
     def __init__(self, left, op_token, right):
+        """
+            left: node -> Left side of op
+            op_token: token -> operation
+            right: node -> Right side of op
+        """
         self.left = left
         self.op_token = op_token
         self.right = right
@@ -142,9 +165,13 @@ class Parser:
         # print(self.lexer.text)
         self.current_token = self.lexer.get_next_token()
     def eat(self, type_):
+        """ Check the current token type and get next """
         if self.current_token.type == type_:
             self.current_token = self.lexer.get_next_token()
         else:
+            lex = self.lexer
+            ex = "Unexpected token {} at {}({},{}) waited {}"
+            ex = ex.format(self.current_token, lex.pos, lex.col, lex.row, type_)
             raise Exception("{self.current_token.type}:{type_}")
     def parse(self):
         return self.expr()
@@ -169,10 +196,12 @@ class Parser:
             node = BinaryOp(node, token, self.factor())
         return node
     def factor(self):
-        # print(self.current_token)
-        if self.current_token.type == INTEGER: # TODO: Add float
+        if self.current_token.type in (INTEGER, FLOAT):
             token = self.current_token
-            self.eat(INTEGER)
+            if self.current_token.type == INTEGER:
+                self.eat(INTEGER)
+            if self.current_token.type == FLOAT:
+                self.eat(FLOAT)
             if self.current_token.type in (DICE, LPAREN):
                 return Cluster(token, self.factor())
             return Num(token)
@@ -193,8 +222,6 @@ class Parser:
             token = self.current_token
             self.eat(MINUS)
             return UnaryOp(token, self.factor())
-
-
         raise Exception("There's something wrong with parser")
 
 
@@ -247,41 +274,16 @@ class Interpreter(NodeVisitor):
         return node.value
 
 
-from test import *
+import test
 parserf = lambda text: Parser(Lexer(text))
-interf  = lambda text: Interpreter(parserf(text))
+interf = lambda text: Interpreter(parserf(text))
 def tests():
-    # test_dice_lexer(Lexer)
-    test_dice_parser(parserf)
-    test_dice_interpreter(interf)
+    # test.test_dice_lexer(Lexer)
+    test.test_dice_parser(parserf)
+    test.test_dice_interpreter(interf)
 
 def main():
     tests()
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

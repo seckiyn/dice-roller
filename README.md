@@ -14,6 +14,9 @@ How to use:
         Or you can just use it as a simple calculator
         >>> 1 + 3 * (42 - 24)
         55
+        Rolls the d20 and d8 two times and adds them
+        >>> 2(d20+d8)
+        36 
 
     Use it directly from command-line:
         
