@@ -3,7 +3,8 @@ import random
 
 # CONSTS
 
-VERBOSE = False # Adds additional output information
+# random.seed(12345)
+VERBOSE = True # Adds additional output information
 DIGITS = "1234567890" # Digits(not neccessary)
 IGNORE_CHARACTERS = " \n\t" # Characters to ignore in expression
 
@@ -12,6 +13,8 @@ INTEGER, FLOAT, PLUS, MINUS, MUL, DIV, LPAREN, RPAREN, DICE, EOF = (
         "INTEGER", "FLOAT", "PLUS", "MINUS", "MUL", "DIV",
         "LPAREN", "RPAREN", "DICE", "EOF"
         )
+
+ASSIGN, ID = ("ASSIGN", "ID")
 
 
 class Token:
@@ -86,6 +89,17 @@ class Lexer:
             self.advance()
             return Token(RPAREN, ")")
         raise Exception("Something is wrong")
+    def id_token(self):
+        id_ = ""
+        while self.current_char is not None and self.current_char.isalnum():
+            id_ += self.current_char
+            self.advance()
+        return Token(ID, id_)
+    def peek(self):
+        peek_pos = self.pos + 1
+        if peek_pos > len(self.text) - 1:
+            return None
+        return self.text[peek_pos]
     def get_next_token(self):
         """ Returns the token """
         while self.current_char is not None:
@@ -94,10 +108,15 @@ class Lexer:
                 continue
             if self.current_char in DIGITS:
                 return self.integer()
-            if self.current_char == "d":
+            if self.current_char == "d" and self.peek() in DIGITS:
                 return self.dicer()
             if self.current_char in "(+-*/)":
                 return self.math_token()
+            if self.current_char == "=":
+                self.advance()
+                return Token(ASSIGN, "=")
+            if self.current_char.isalnum():
+                return self.id_token()
             ex = "Unexpected char {} at {} (row: {}, col: {})"
             ex = ex.format(self.current_char, self.pos, self.row, self.col)
             raise Exception(ex)
@@ -159,6 +178,21 @@ class Num(AST):
     def __str__(self):
         string = f"Num({self.value})"
         return string
+
+class Assign(AST):
+    def __init__(self, name, node):
+        self.name = name
+        self.node = node
+    def __str__(self):
+        string = f"Assign({self.name}:{self.node})"
+        return string
+class Id(AST):
+    def __init__(self, token):
+        self.token = token
+        self.value = self.name = token.value
+    def __str__(self):
+        string = f"Id({self.value})"
+        return string
 class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
@@ -172,9 +206,15 @@ class Parser:
             lex = self.lexer
             ex = "Unexpected token {} at {}({},{}) waited {}"
             ex = ex.format(self.current_token, lex.pos, lex.col, lex.row, type_)
-            raise Exception("{self.current_token.type}:{type_}")
+            raise Exception(ex)
     def parse(self):
+        return self.look()
+    def look(self):
         return self.expr()
+    def assign(self, name):
+        self.eat(ASSIGN)
+        to_assign = self.expr()
+        return Assign(name, to_assign)
     def expr(self):
         node = self.term()
         while self.current_token.type in (PLUS, MINUS):
@@ -202,7 +242,7 @@ class Parser:
                 self.eat(INTEGER)
             if self.current_token.type == FLOAT:
                 self.eat(FLOAT)
-            if self.current_token.type in (DICE, LPAREN):
+            if self.current_token.type in (DICE, LPAREN, ID):
                 return Cluster(token, self.factor())
             return Num(token)
         if self.current_token.type == DICE:
@@ -222,7 +262,14 @@ class Parser:
             token = self.current_token
             self.eat(MINUS)
             return UnaryOp(token, self.factor())
-        raise Exception("There's something wrong with parser")
+        return self.variable()
+    def variable(self):
+        token = self.current_token
+        self.eat(ID)
+        if self.current_token.type == ASSIGN:
+            return self.assign(token.value)
+        return Id(token)
+
 
 
 class NodeVisitor:
@@ -232,6 +279,8 @@ class NodeVisitor:
             raise Exception(f"There's no method called {method_name}->{node}")
         visitor = getattr(self, method_name, no_method)
         return visitor(node)
+
+assigned = dict() # Find a better way
 class Interpreter(NodeVisitor):
     def __init__(self, parser):
         self.parser = parser
@@ -272,6 +321,11 @@ class Interpreter(NodeVisitor):
         return result
     def visit_Num(self, node):
         return node.value
+    def visit_Assign(self, node):
+        assigned[node.name] = node.node
+        return 0
+    def visit_Id(self, node):
+        return self.visit(assigned[node.name])
 
 
 import test

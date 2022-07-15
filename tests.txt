@@ -10,4 +10,8 @@ d8+d8+d8     # Checks addition random
 2 * (2d10 + 3d8) # Check operation with parantheses
 2 * 3(2d10 + 3d8) # Check operation with parantheses
 +d10         # Checks unary operation
--d10 + 2d4 # Check negative unary operation
+-d10 + 2d4   # Check negative unary operation
+a = 2d20     # Checks assigning
+a            # Get back assigned value
+a + a + 2 * a# Math with assigned
+2a           # Cluster with assigned
