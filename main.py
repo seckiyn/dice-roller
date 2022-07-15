@@ -1,10 +1,11 @@
 """ Dice roller main interpreter """
 import random
 
+# TODO: Add ID compatibilty to cluster
 # CONSTS
 
 # random.seed(12345)
-VERBOSE = True # Adds additional output information
+VERBOSE = False # Adds additional output information
 DIGITS = "1234567890" # Digits(not neccessary)
 IGNORE_CHARACTERS = " \n\t" # Characters to ignore in expression
 

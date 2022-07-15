@@ -1,1 +1,5 @@
-a = 2d20
+d20
+# Comment
+
+# Space
+sword = 2d20

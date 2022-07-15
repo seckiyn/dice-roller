@@ -24,6 +24,13 @@ How to use:
         21
         >>> 2sword
         31
+        You can assign or throw dice upon running file by adding the 
+        expressions in load.txt
+        load.txt:
+        d1
+        d20
+        sword = d20 + 2
+
 
 
     Use it directly from command-line:
