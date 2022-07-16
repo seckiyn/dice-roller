@@ -1,0 +1,3 @@
+!load load.txt
+!print My sword:
+2d20

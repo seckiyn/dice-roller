@@ -24,12 +24,22 @@ How to use:
         21
         >>> 2sword
         31
+        You can execute commands with an exclamation point(!)
+        >>> !exit
+        You can print things by "print", "say", "tell", "out"
+        >>> !print Hello World!
+
         You can assign or throw dice upon running file by adding the 
-        expressions in load.txt
+        expressions in load.txt. You can also use commands here.
         load.txt:
         d1
         d20
         sword = d20 + 2
+
+        You can load your own files using !load command:
+        >>> !load mysword.txt
+        My sword:
+        28
 
 
 
