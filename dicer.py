@@ -20,11 +20,19 @@ def argv():
 def handle_command(op):
     if not op or op == "exit":
         sys.exit()
-    print(interf(op).interpret())
+    try:
+        print(interf(op).interpret())
+    except Exception as e:
+        print("Cannot interpret {}.".format(e))
+
+
 
 def parse_command(op):
     if op.startswith("!"):
-        handle(op, parse_command)
+        try:
+            print(handle(op, parse_command))
+        except Exception as e:
+            print(f"There's no command like that {op}, {e}")
     else:
         handle_command(op)
 
