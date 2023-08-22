@@ -1,5 +1,6 @@
 """ Dice roller main interpreter """
 import random
+import readline
 
 # TODO: Add ID compatibilty to cluster
 # CONSTS
